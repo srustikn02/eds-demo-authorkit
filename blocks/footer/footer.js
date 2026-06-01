@@ -17,11 +17,13 @@ export default async function init(el) {
 
     const sections = [...fragment.querySelectorAll('.section')];
 
-    const copyright = sections.pop();
-    copyright.classList.add('section-copyright');
+    // Last section = copyright + legal bar
+    const bottom = sections.pop();
+    if (bottom) bottom.classList.add('section-bottom');
 
-    const legal = sections.pop();
-    legal.classList.add('section-legal');
+    // Remaining first section = brand + social
+    const top = sections[0];
+    if (top) top.classList.add('section-top');
 
     el.append(fragment);
   } catch (e) {
