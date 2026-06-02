@@ -10,7 +10,7 @@ const FOOTER_PATH = '/fragments/nav';
 export default async function init(el) {
   const { locale } = getConfig();
   const footerMeta = getMetadata('footer');
-  const path = footerMeta || FOOTER_PATH;
+  const path = FOOTER_PATH;
   try {
     const fragment = await loadFragment(`${path}${locale.prefix}/footer`);
     fragment.classList.add('footer-content');
