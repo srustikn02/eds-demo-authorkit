@@ -31,6 +31,7 @@ function toggleMenu(menu) {
     return;
   }
 
+  // Setup the global close event
   document.addEventListener('click', docClose);
   menu.classList.add('is-open');
 }
@@ -55,100 +56,97 @@ function getLocalePrefixFromHref(href) {
 }
 
 function getLanguageItems(nav) {
-  const items = [...nav.querySelectorAll(':scope > li')];
+  return [...nav.querySelectorAll(':scope > li')]
+    .map((item) => {
+      const link = item.querySelector('a');
+      if (!link) return null;
 
-  return items.map((item) => {
-    const link = item.querySelector('a');
-    if (!link) return null;
+      const href = link.getAttribute('href') || '';
 
-    const href = link.getAttribute('href') || '';
-    const normalizedHref = normalizeLanguageHref(href);
-    const localePrefix = getLocalePrefixFromHref(href);
-
-    return {
-      label: item.textContent.trim(),
-      href: normalizedHref || '/',
-      localePrefix,
-      isDefault: localePrefix === '',
-    };
-  }).filter(Boolean);
+      return {
+        label: item.textContent.trim(),
+        href: normalizeLanguageHref(href),
+        localePrefix: getLocalePrefixFromHref(href),
+      };
+    })
+    .filter(Boolean);
 }
 
-function getActiveLanguage(items, pathname) {
-  const found = items.find((item) => (
-    item.localePrefix
-      && (pathname === item.localePrefix || pathname.startsWith(`${item.localePrefix}/`))
-  ));
+function getActiveLanguage(items) {
+  const { pathname } = window.location;
 
-  if (found) return found;
-  return items.find((item) => item.isDefault) || items[0] || null;
+  return items.find((item) => (
+    item.localePrefix
+      && (pathname === item.localePrefix
+      || pathname.startsWith(`${item.localePrefix}/`))
+  )) || items[0];
 }
 
 async function decorateLanguage(btn) {
   const section = btn.closest('.section');
 
-  let menu = section.querySelector('.language.menu');
+  let selector = section.querySelector('.country-selector');
 
-  if (!menu) {
-    const content = document.createElement('div');
-    content.classList.add('block-content');
-
-    const fragment = await loadFragment(`${locale.prefix}${HEADER_PATH}/languages`);
-
-    menu = document.createElement('div');
-    menu.className = 'language menu';
+  if (!selector) {
+    const fragment = await loadFragment(
+      `${locale.prefix}${HEADER_PATH}/languages`,
+    );
 
     const nav = fragment.querySelector('ul');
     if (!nav) return;
 
     const languageItems = getLanguageItems(nav);
-    const { pathname } = window.location;
-    const activeLanguage = getActiveLanguage(languageItems, pathname);
+    const activeLanguage = getActiveLanguage(languageItems);
 
-    btn.innerHTML = '';
-    btn.classList.add('has-dropdown');
+    selector = document.createElement('aside');
+    selector.className = 'country-selector';
+    selector.setAttribute('data-wg-notranslate', '');
+    selector.setAttribute('tabindex', '0');
+    selector.setAttribute(
+      'aria-label',
+      `Language selected: ${activeLanguage?.label || ''}`,
+    );
 
-    const label = document.createElement('span');
-    label.className = 'language-label';
-    label.textContent = activeLanguage?.label || 'English';
-    btn.append(label);
+    const inputId = `language-selector-${Date.now()}`;
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = inputId;
+    input.className = 'language-choice';
+
+    const label = document.createElement('label');
+    label.className = 'wgcurrent';
+    label.setAttribute('for', inputId);
+
+    const currentLanguage = document.createElement('span');
+    currentLanguage.className = 'wglanguage-name';
+    currentLanguage.textContent = activeLanguage?.label || '';
+
+    label.append(currentLanguage);
 
     const list = document.createElement('ul');
-    list.className = 'language-dropdown';
-
-    if (activeLanguage) {
-      const activeLi = document.createElement('li');
-      activeLi.className = 'is-active';
-
-      const activeSpan = document.createElement('span');
-      activeSpan.className = 'language-active-label';
-      activeSpan.textContent = activeLanguage.label;
-
-      activeLi.append(activeSpan);
-      list.append(activeLi);
-    }
 
     languageItems.forEach((item) => {
-      if (activeLanguage && item.href === activeLanguage.href) return;
+      if (item.href === activeLanguage?.href) return;
 
       const li = document.createElement('li');
-      const link = document.createElement('a');
-      link.href = item.href;
-      link.textContent = item.label;
-      li.append(link);
+
+      const a = document.createElement('a');
+      a.href = item.href;
+      a.textContent = item.label;
+
+      li.append(a);
       list.append(li);
     });
 
-    menu.append(list);
-    content.append(menu);
-    section.append(content);
-  }
+    selector.append(input);
+    selector.append(label);
+    selector.append(list);
 
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleMenu(section);
-  });
+    const wrapper = btn.closest('.action-wrapper');
+    wrapper.innerHTML = '';
+    wrapper.append(selector);
+  }
 }
 
 function decorateScheme(btn) {
@@ -168,7 +166,7 @@ function decorateScheme(btn) {
     body.classList.remove(theme.remove);
     body.classList.add(theme.add);
     localStorage.setItem('color-scheme', theme.add);
-
+    // Re-calculatie section schemes
     const sections = document.querySelectorAll('.section');
     for (const section of sections) {
       setColorScheme(section);
@@ -187,14 +185,12 @@ async function decorateAction(header, pattern) {
   const link = header.querySelector(`[href*="${pattern}"]`);
   if (!link) return;
 
-  const icon = link.querySelector('.icon');
-  const text = link.textContent.trim();
+ const icon = link.querySelector('.icon');
+const text = link.textContent;
+const btn = document.createElement('button');
 
-  const btn = document.createElement('button');
-  
-  if (pattern !== '/tools/widgets/language' && icon) {
-    btn.append(icon);
-  }
+if (pattern !== '/tools/widgets/language') {
+  if (icon) btn.append(icon);
 
   if (text) {
     const textSpan = document.createElement('span');
@@ -202,6 +198,7 @@ async function decorateAction(header, pattern) {
     textSpan.textContent = text;
     btn.append(textSpan);
   }
+}
   const wrapper = document.createElement('div');
   const iconName = icon?.classList?.[1]?.replace('icon-', '') || 'language';
   wrapper.className = `action-wrapper ${iconName}`;
