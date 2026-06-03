@@ -62,12 +62,38 @@ header {
 
       .text {
         display: block;
-        width: 0;
-        height: 0;
-        overflow: hidden;
+        white-space: nowrap;
       }
     }
   }
+
+  .action-wrapper.language {
+  button {
+    width: auto;
+    min-width: 120px;
+    padding: 0 16px;
+    gap: 8px;
+    font-size: var(--body-font-size-s);
+  }
+
+  .icon {
+    display: none;
+  }
+
+  button.has-dropdown::after {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    margin-left: 8px;
+    vertical-align: middle;
+    margin-bottom: 4px;
+    transition: transform 0.2s;
+  }
+}
 
   .breadcrumbs {
     display: none;
@@ -363,4 +389,12 @@ header {
       }
     }
   }
+
+  .actions-section.is-open {
+  .action-wrapper.language button.has-dropdown::after {
+    transform: rotate(-135deg);
+    margin-bottom: -2px;
+  }
+}
+
 }

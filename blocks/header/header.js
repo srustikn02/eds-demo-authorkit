@@ -36,20 +36,71 @@ function toggleMenu(menu) {
   menu.classList.add('is-open');
 }
 
-function decorateLanguage(btn) {
+async function decorateLanguage(btn) {
   const section = btn.closest('.section');
-  btn.addEventListener('click', async () => {
-    let menu = section.querySelector('.language.menu');
-    if (!menu) {
-      const content = document.createElement('div');
-      content.classList.add('block-content');
-      const fragment = await loadFragment(`${locale.prefix}${HEADER_PATH}/languages`);
-      menu = document.createElement('div');
-      menu.className = 'language menu';
-      menu.append(fragment);
-      content.append(menu);
-      section.append(content);
+
+  let menu = section.querySelector('.language.menu');
+
+  if (!menu) {
+    const content = document.createElement('div');
+    content.classList.add('block-content');
+
+    const fragment = await loadFragment(`${locale.prefix}${HEADER_PATH}/languages`);
+
+    menu = document.createElement('div');
+    menu.className = 'language menu';
+
+    const nav = fragment.querySelector('ul');
+    if (!nav) return;
+
+    const { pathname } = window.location;
+    const items = [...nav.querySelectorAll(':scope > li')];
+
+    let activeItem = null;
+
+    items.forEach((item) => {
+      const link = item.querySelector('a');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+
+      if (
+        pathname === href
+        || pathname.startsWith(`${href}/`)
+      ) {
+        activeItem = item;
+      }
+    });
+
+    const activeLabel = activeItem
+      ? activeItem.textContent.trim()
+      : btn.textContent.trim();
+
+    // Remove active language from dropdown
+    if (activeItem) {
+      activeItem.remove();
     }
+
+    // Remove globe icon and existing text
+    btn.innerHTML = '';
+    btn.classList.add('has-dropdown');
+
+    const label = document.createElement('span');
+    label.className = 'language-label';
+    label.textContent = activeLabel;
+
+    btn.append(label);
+
+    nav.classList.add('language-dropdown');
+    menu.append(nav);
+
+    content.append(menu);
+    section.append(content);
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     toggleMenu(section);
   });
 }
@@ -91,9 +142,14 @@ async function decorateAction(header, pattern) {
   if (!link) return;
 
   const icon = link.querySelector('.icon');
-  const text = link.textContent;
+  const text = link.textContent.trim();
+
   const btn = document.createElement('button');
-  if (icon) btn.append(icon);
+  
+  if (pattern !== '/tools/widgets/language' && icon) {
+    btn.append(icon);
+  }
+
   if (text) {
     const textSpan = document.createElement('span');
     textSpan.className = 'text';
