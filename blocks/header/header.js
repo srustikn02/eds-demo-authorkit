@@ -31,9 +31,57 @@ function toggleMenu(menu) {
     return;
   }
 
-  // Setup the global close event
   document.addEventListener('click', docClose);
   menu.classList.add('is-open');
+}
+
+function normalizeLanguageHref(href) {
+  try {
+    const url = new URL(href, window.location.origin);
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return href.replace(/#.*$/, '');
+  }
+}
+
+function getLocalePrefixFromHref(href) {
+  const normalized = normalizeLanguageHref(href);
+  const parts = normalized.split('/').filter(Boolean);
+
+  if (!parts.length) return '';
+
+  const first = parts[0];
+  return /^[a-z]{2}(-[a-z]{2})?$/i.test(first) ? `/${first}` : '';
+}
+
+function getLanguageItems(nav) {
+  const items = [...nav.querySelectorAll(':scope > li')];
+
+  return items.map((item) => {
+    const link = item.querySelector('a');
+    if (!link) return null;
+
+    const href = link.getAttribute('href') || '';
+    const normalizedHref = normalizeLanguageHref(href);
+    const localePrefix = getLocalePrefixFromHref(href);
+
+    return {
+      label: item.textContent.trim(),
+      href: normalizedHref || '/',
+      localePrefix,
+      isDefault: localePrefix === '',
+    };
+  }).filter(Boolean);
+}
+
+function getActiveLanguage(items, pathname) {
+  const found = items.find((item) => (
+    item.localePrefix
+      && (pathname === item.localePrefix || pathname.startsWith(`${item.localePrefix}/`))
+  ));
+
+  if (found) return found;
+  return items.find((item) => item.isDefault) || items[0] || null;
 }
 
 async function decorateLanguage(btn) {
@@ -53,47 +101,45 @@ async function decorateLanguage(btn) {
     const nav = fragment.querySelector('ul');
     if (!nav) return;
 
+    const languageItems = getLanguageItems(nav);
     const { pathname } = window.location;
-    const items = [...nav.querySelectorAll(':scope > li')];
+    const activeLanguage = getActiveLanguage(languageItems, pathname);
 
-    let activeItem = null;
-
-    items.forEach((item) => {
-      const link = item.querySelector('a');
-      if (!link) return;
-
-      const href = link.getAttribute('href');
-
-      if (
-        pathname === href
-        || pathname.startsWith(`${href}/`)
-      ) {
-        activeItem = item;
-      }
-    });
-
-    const activeLabel = activeItem
-      ? activeItem.textContent.trim()
-      : btn.textContent.trim();
-
-    // Remove active language from dropdown
-    if (activeItem) {
-      activeItem.remove();
-    }
-
-    // Remove globe icon and existing text
     btn.innerHTML = '';
     btn.classList.add('has-dropdown');
 
     const label = document.createElement('span');
     label.className = 'language-label';
-    label.textContent = activeLabel;
-
+    label.textContent = activeLanguage?.label || 'English';
     btn.append(label);
 
-    nav.classList.add('language-dropdown');
-    menu.append(nav);
+    const list = document.createElement('ul');
+    list.className = 'language-dropdown';
 
+    if (activeLanguage) {
+      const activeLi = document.createElement('li');
+      activeLi.className = 'is-active';
+
+      const activeSpan = document.createElement('span');
+      activeSpan.className = 'language-active-label';
+      activeSpan.textContent = activeLanguage.label;
+
+      activeLi.append(activeSpan);
+      list.append(activeLi);
+    }
+
+    languageItems.forEach((item) => {
+      if (activeLanguage && item.href === activeLanguage.href) return;
+
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = item.href;
+      link.textContent = item.label;
+      li.append(link);
+      list.append(li);
+    });
+
+    menu.append(list);
     content.append(menu);
     section.append(content);
   }
@@ -122,7 +168,7 @@ function decorateScheme(btn) {
     body.classList.remove(theme.remove);
     body.classList.add(theme.add);
     localStorage.setItem('color-scheme', theme.add);
-    // Re-calculatie section schemes
+
     const sections = document.querySelectorAll('.section');
     for (const section of sections) {
       setColorScheme(section);
@@ -157,7 +203,8 @@ async function decorateAction(header, pattern) {
     btn.append(textSpan);
   }
   const wrapper = document.createElement('div');
-  wrapper.className = `action-wrapper ${icon.classList[1].replace('icon-', '')}`;
+  const iconName = icon?.classList?.[1]?.replace('icon-', '') || 'language';
+  wrapper.className = `action-wrapper ${iconName}`;
   wrapper.append(btn);
   link.parentElement.parentElement.replaceChild(wrapper, link.parentElement);
 

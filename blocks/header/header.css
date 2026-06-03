@@ -54,6 +54,7 @@ header {
       background-color: transparent;
       height: 100%;
       width: 64px;
+      cursor: pointer;
 
       .icon {
         width: 24px;
@@ -68,32 +69,38 @@ header {
   }
 
   .action-wrapper.language {
-  button {
-    width: auto;
-    min-width: 120px;
-    padding: 0 16px;
-    gap: 8px;
-    font-size: var(--body-font-size-s);
-  }
+    button {
+      width: auto;
+      min-width: 120px;
+      padding: 0 16px;
+      gap: 8px;
+      font-size: var(--body-font-size-s);
+    }
 
-  .icon {
-    display: none;
-  }
+    .icon {
+      display: none;
+    }
 
-  button.has-dropdown::after {
-    content: "";
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: rotate(45deg);
-    margin-left: 8px;
-    vertical-align: middle;
-    margin-bottom: 4px;
-    transition: transform 0.2s;
+    .language-label {
+      display: inline-block;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    button.has-dropdown::after {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      margin-left: 8px;
+      margin-bottom: 4px;
+      vertical-align: middle;
+      transition: transform 0.2s ease;
+    }
   }
-}
 
   .breadcrumbs {
     display: none;
@@ -142,6 +149,43 @@ header {
       .section {
         margin: 0;
       }
+
+      .language-dropdown {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .language-dropdown li {
+        margin: 0;
+      }
+
+      .language-dropdown a,
+      .language-active-label {
+        display: block;
+        padding: 10px 0;
+        font-size: var(--body-font-size-s);
+        line-height: 1.4;
+      }
+
+      .language-dropdown a {
+        color: inherit;
+      }
+
+      .language-dropdown a:hover,
+      .language-dropdown a:focus-visible {
+        text-decoration: underline;
+      }
+
+      .language-dropdown .is-active {
+        border-bottom: 1px solid light-dark(var(--color-gray-200), var(--color-gray-600));
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+      }
+
+      .language-active-label {
+        font-weight: 700;
+      }
     }
   }
 
@@ -183,7 +227,7 @@ header {
     }
 
     .action-wrapper {
-      right: -23px; /* 64 minus waffle icon inset */
+      right: -23px;
     }
   }
 
@@ -210,6 +254,10 @@ header {
       button {
         width: 44px;
       }
+    }
+
+    .action-wrapper.language button {
+      width: auto;
     }
 
     &.is-open {
@@ -296,13 +344,16 @@ header {
         display: none;
         max-width: initial;
         margin: 0;
-        width: 180px;
+        width: 220px;
         background-color: var(--color-shaded);
-        padding: var(--spacing-xl);
+        padding: 16px 20px;
         position: absolute;
         left: auto;
         right: 0;
         z-index: 1001;
+        border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-600));
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
       }
     }
 
@@ -391,10 +442,9 @@ header {
   }
 
   .actions-section.is-open {
-  .action-wrapper.language button.has-dropdown::after {
-    transform: rotate(-135deg);
-    margin-bottom: -2px;
+    .action-wrapper.language button.has-dropdown::after {
+      transform: rotate(-135deg);
+      margin-bottom: -2px;
+    }
   }
-}
-
 }
