@@ -82,70 +82,132 @@ function getActiveLanguage(items) {
   )) || items[0];
 }
 
+function toggleLanguageDropdown(selector) {
+  selector.classList.toggle('is-open');
+
+  const handleOutsideClick = (e) => {
+    if (!selector.contains(e.target)) {
+      selector.classList.remove('is-open');
+      document.removeEventListener('click', handleOutsideClick);
+    }
+  };
+
+  if (selector.classList.contains('is-open')) {
+    // Delay adding listener to prevent immediate close
+    setTimeout(() => {
+      document.addEventListener('click', handleOutsideClick);
+    }, 0);
+  }
+}
+
 async function decorateLanguage(btn) {
   const section = btn.closest('.section');
 
   let selector = section.querySelector('.country-selector');
 
   if (!selector) {
-    const fragment = await loadFragment(
-      `${locale.prefix}${HEADER_PATH}/languages`,
-    );
+    const languagePath = `${locale.prefix}${HEADER_PATH}/languages`;
+    console.log('[Language Selector] Loading languages from path:', languagePath);
+
+    const fragment = await loadFragment(languagePath);
+
+    console.log('[Language Selector] Fragment loaded:', fragment);
 
     const nav = fragment.querySelector('ul');
-    if (!nav) return;
+    if (!nav) {
+      console.warn('[Language Selector] No <ul> found in fragment');
+      return;
+    }
 
     const languageItems = getLanguageItems(nav);
-    const activeLanguage = getActiveLanguage(languageItems);
+    console.log('[Language Selector] Language items parsed:', languageItems);
 
-    selector = document.createElement('aside');
+    const activeLanguage = getActiveLanguage(languageItems);
+    console.log('[Language Selector] Active language:', activeLanguage);
+
+    selector = document.createElement('div');
     selector.className = 'country-selector';
     selector.setAttribute('data-wg-notranslate', '');
-    selector.setAttribute('tabindex', '0');
     selector.setAttribute(
       'aria-label',
       `Language selected: ${activeLanguage?.label || ''}`,
     );
 
-    const inputId = `language-selector-${Date.now()}`;
-
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.id = inputId;
-    input.className = 'language-choice';
-
-    const label = document.createElement('label');
-    label.className = 'wgcurrent';
-    label.setAttribute('for', inputId);
+    // Create the dropdown button (shows active language)
+    const dropdownBtn = document.createElement('button');
+    dropdownBtn.type = 'button';
+    dropdownBtn.className = 'language-dropdown-btn';
+    dropdownBtn.setAttribute('aria-haspopup', 'listbox');
+    dropdownBtn.setAttribute('aria-expanded', 'false');
 
     const currentLanguage = document.createElement('span');
     currentLanguage.className = 'wglanguage-name';
     currentLanguage.textContent = activeLanguage?.label || '';
 
-    label.append(currentLanguage);
+    const arrowIcon = document.createElement('span');
+    arrowIcon.className = 'dropdown-arrow';
+    arrowIcon.innerHTML = '▾'; // Down arrow character
 
+    dropdownBtn.append(currentLanguage);
+    dropdownBtn.append(arrowIcon);
+
+    // Create the dropdown list
     const list = document.createElement('ul');
+    list.className = 'language-dropdown-list';
+    list.setAttribute('role', 'listbox');
 
     languageItems.forEach((item) => {
-      if (item.href === activeLanguage?.href) return;
-
       const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+
+      if (item.href === activeLanguage?.href) {
+        li.classList.add('is-active');
+        li.setAttribute('aria-selected', 'true');
+      }
 
       const a = document.createElement('a');
       a.href = item.href;
       a.textContent = item.label;
 
+      // Handle language selection
+      a.addEventListener('click', (e) => {
+        // Update the button text before navigation
+        currentLanguage.textContent = item.label;
+        selector.classList.remove('is-open');
+        dropdownBtn.setAttribute('aria-expanded', 'false');
+        // Allow default navigation to happen
+      });
+
       li.append(a);
       list.append(li);
     });
 
-    selector.append(input);
-    selector.append(label);
+    // Toggle dropdown on button click
+    dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = selector.classList.contains('is-open');
+      dropdownBtn.setAttribute('aria-expanded', !isOpen);
+      toggleLanguageDropdown(selector);
+    });
+
+    // Keyboard accessibility
+    dropdownBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const isOpen = selector.classList.contains('is-open');
+        dropdownBtn.setAttribute('aria-expanded', !isOpen);
+        toggleLanguageDropdown(selector);
+      }
+    });
+
+    selector.append(dropdownBtn);
     selector.append(list);
 
     const wrapper = btn.closest('.action-wrapper');
     wrapper.innerHTML = '';
     wrapper.append(selector);
+
+    console.log('[Language Selector] Dropdown created successfully');
   }
 }
 
@@ -185,20 +247,21 @@ async function decorateAction(header, pattern) {
   const link = header.querySelector(`[href*="${pattern}"]`);
   if (!link) return;
 
- const icon = link.querySelector('.icon');
-const text = link.textContent;
-const btn = document.createElement('button');
+  const icon = link.querySelector('.icon');
+  const text = link.textContent;
+  const btn = document.createElement('button');
 
-if (pattern !== '/tools/widgets/language') {
-  if (icon) btn.append(icon);
+  if (pattern !== '/tools/widgets/language') {
+    if (icon) btn.append(icon);
 
-  if (text) {
-    const textSpan = document.createElement('span');
-    textSpan.className = 'text';
-    textSpan.textContent = text;
-    btn.append(textSpan);
+    if (text) {
+      const textSpan = document.createElement('span');
+      textSpan.className = 'text';
+      textSpan.textContent = text;
+      btn.append(textSpan);
+    }
   }
-}
+
   const wrapper = document.createElement('div');
   const iconName = icon?.classList?.[1]?.replace('icon-', '') || 'language';
   wrapper.className = `action-wrapper ${iconName}`;
