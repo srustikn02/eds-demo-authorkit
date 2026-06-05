@@ -2,8 +2,8 @@ auto-generated: true
 indices:
   blog:
     include:
-      - /blog/**
-    target: /blog/query-index.json
+      - /docs/content/blog/**
+    target: /docs/content/blog/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]
