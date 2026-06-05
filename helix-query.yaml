@@ -1,9 +1,13 @@
+version: 1
 auto-generated: true
 indices:
   blog:
     include:
-      - /docs/content/blog/**
-    target: /docs/content/blog/query-index.json
+      - /docs/content/en/blog/articles/**
+    exclude:
+      - /docs/content/en/blog/
+      - /docs/content/en/blog/index
+    target: /docs/content/en/blog/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]
@@ -35,17 +39,13 @@ indices:
           match(attribute(el, "content"), "https:\/\/[^/]+(/.*)")
       content:
         select: main > div
-        values: characters(textContent(el), 0, 200)
+        value: |
+          characters(textContent(el), 0, 200)
+      category:
+        select: head > meta[name="category"]
+        value: |
+          attribute(el, "content")
       tags:
         select: head > meta[property="article:tag"]
         values: |
           attribute(el, 'content')
-  authors:
-    include:
-      - /author/**
-    target: /author/query-index.json
-    properties:
-      title:
-        select: head > meta[property="og:title"]
-        value: |
-          attribute(el, "content")
