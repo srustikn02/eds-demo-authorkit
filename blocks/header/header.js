@@ -36,179 +36,55 @@ function toggleMenu(menu) {
   menu.classList.add('is-open');
 }
 
-function normalizeLanguageHref(href) {
-  try {
-    const url = new URL(href, window.location.origin);
-    return `${url.pathname}${url.search}`;
-  } catch {
-    return href.replace(/#.*$/, '');
-  }
-}
+function decorateLanguage(btn) {
+  // Find the parent list item context wrapping your button natively
+  const utilityLi = btn.closest('li') || btn.closest('.utility-action-item');
+  if (!utilityLi) return;
+  
+  btn.removeAttribute('onclick');
 
-function getLocalePrefixFromHref(href) {
-  const normalized = normalizeLanguageHref(href);
-  const parts = normalized.split('/').filter(Boolean);
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  if (!parts.length) return '';
-
-  const first = parts[0];
-  return /^[a-z]{2}(-[a-z]{2})?$/i.test(first) ? `/${first}` : '';
-}
-
-function getLanguageItems(nav) {
-  return [...nav.querySelectorAll(':scope > li')]
-    .map((item) => {
-      const link = item.querySelector('a');
-      if (!link) return null;
-
-      const href = link.getAttribute('href') || '';
-
-      return {
-        label: item.textContent.trim(),
-        href: normalizeLanguageHref(href),
-        localePrefix: getLocalePrefixFromHref(href),
-      };
-    })
-    .filter(Boolean);
-}
-
-function getActiveLanguage(items) {
-  const { pathname } = window.location;
-
-  return items.find((item) => (
-    item.localePrefix
-      && (pathname === item.localePrefix
-      || pathname.startsWith(`${item.localePrefix}/`))
-  )) || items[0];
-}
-
-function toggleLanguageDropdown(selector) {
-  selector.classList.toggle('is-open');
-
-  const handleOutsideClick = (e) => {
-    if (!selector.contains(e.target)) {
-      selector.classList.remove('is-open');
-      document.removeEventListener('click', handleOutsideClick);
-    }
-  };
-
-  if (selector.classList.contains('is-open')) {
-    // Delay adding listener to prevent immediate close
-    setTimeout(() => {
-      document.addEventListener('click', handleOutsideClick);
-    }, 0);
-  }
-}
-
-async function decorateLanguage(btn) {
-  const section = btn.closest('.section');
-
-  let selector = section.querySelector('.country-selector');
-
-  if (!selector) {
-    const languagePath = `${locale.prefix}${HEADER_PATH}/languages`;
-    console.log('[Language Selector] Loading languages from path:', languagePath);
-
-    const fragment = await loadFragment(languagePath);
-
-    console.log('[Language Selector] Fragment loaded:', fragment);
-
-    const nav = fragment.querySelector('ul');
-    if (!nav) {
-      console.warn('[Language Selector] No <ul> found in fragment');
-      return;
-    }
-
-    const languageItems = getLanguageItems(nav);
-    console.log('[Language Selector] Language items parsed:', languageItems);
-
-    const activeLanguage = getActiveLanguage(languageItems);
-    console.log('[Language Selector] Active language:', activeLanguage);
-
-    selector = document.createElement('div');
-    selector.className = 'country-selector';
-    selector.setAttribute('data-wg-notranslate', '');
-    selector.setAttribute(
-      'aria-label',
-      `Language selected: ${activeLanguage?.label || ''}`,
-    );
-
-    // Create the dropdown button (shows active language)
-    const dropdownBtn = document.createElement('button');
-    dropdownBtn.type = 'button';
-    dropdownBtn.className = 'language-dropdown-btn';
-    dropdownBtn.setAttribute('aria-haspopup', 'listbox');
-    dropdownBtn.setAttribute('aria-expanded', 'false');
-
-    const currentLanguage = document.createElement('span');
-    currentLanguage.className = 'wglanguage-name';
-    currentLanguage.textContent = activeLanguage?.label || '';
-
-    const arrowIcon = document.createElement('span');
-    arrowIcon.className = 'dropdown-arrow';
-    arrowIcon.innerHTML = '▾'; // Down arrow character
-
-    dropdownBtn.append(currentLanguage);
-    dropdownBtn.append(arrowIcon);
-
-    // Create the dropdown list
-    const list = document.createElement('ul');
-    list.className = 'language-dropdown-list';
-    list.setAttribute('role', 'listbox');
-
-    languageItems.forEach((item) => {
-      const li = document.createElement('li');
-      li.setAttribute('role', 'option');
-
-      if (item.href === activeLanguage?.href) {
-        li.classList.add('is-active');
-        li.setAttribute('aria-selected', 'true');
+    // Check if the dropdown menu already exists inside this list item
+    let menu = utilityLi.querySelector('.language.menu');
+    if (!menu) {
+      // 1. Fetch the raw layout fragment from your authorized path
+      const fragment = await loadFragment(`${locale.prefix}${HEADER_PATH}/languages`);
+      
+      // 2. Create the clean absolute container card
+      menu = document.createElement('div');
+      menu.className = 'language menu';
+      
+      // 3. Extract the inner <ul> list elements from your document payload
+      const rawUl = fragment.querySelector('ul');
+      if (rawUl) {
+        rawUl.className = 'language-menu-list';
+        
+        // Loop through each item to apply standard interactive menu classes
+        [...rawUl.children].forEach((li) => {
+          li.className = 'language-menu-item';
+          
+          const a = li.querySelector('a');
+          if (a) {
+            a.className = 'language-menu-link';
+          }
+        });
+        
+        menu.append(rawUl);
+      } else {
+        // Fallback if no <ul> is found in the fragment
+        menu.append(fragment);
       }
-
-      const a = document.createElement('a');
-      a.href = item.href;
-      a.textContent = item.label;
-
-      // Handle language selection
-      a.addEventListener('click', (e) => {
-        // Update the button text before navigation
-        currentLanguage.textContent = item.label;
-        selector.classList.remove('is-open');
-        dropdownBtn.setAttribute('aria-expanded', 'false');
-        // Allow default navigation to happen
-      });
-
-      li.append(a);
-      list.append(li);
-    });
-
-    // Toggle dropdown on button click
-    dropdownBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = selector.classList.contains('is-open');
-      dropdownBtn.setAttribute('aria-expanded', !isOpen);
-      toggleLanguageDropdown(selector);
-    });
-
-    // Keyboard accessibility
-    dropdownBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const isOpen = selector.classList.contains('is-open');
-        dropdownBtn.setAttribute('aria-expanded', !isOpen);
-        toggleLanguageDropdown(selector);
-      }
-    });
-
-    selector.append(dropdownBtn);
-    selector.append(list);
-
-    const wrapper = btn.closest('.action-wrapper');
-    wrapper.innerHTML = '';
-    wrapper.append(selector);
-
-    console.log('[Language Selector] Dropdown created successfully');
-  }
+      
+      // Append right inside the scoped list item wrapper so it inherits absolute tracking coordinates
+      utilityLi.append(menu);
+    }
+    
+    // 4. Fire your baseline state manager to toggle the dropdown visibility card
+    toggleMenu(utilityLi);
+  });
 }
 
 function decorateScheme(btn) {
@@ -250,21 +126,15 @@ async function decorateAction(header, pattern) {
   const icon = link.querySelector('.icon');
   const text = link.textContent;
   const btn = document.createElement('button');
-
-  if (pattern !== '/tools/widgets/language') {
-    if (icon) btn.append(icon);
-
-    if (text) {
-      const textSpan = document.createElement('span');
-      textSpan.className = 'text';
-      textSpan.textContent = text;
-      btn.append(textSpan);
-    }
+  if (icon) btn.append(icon);
+  if (text) {
+    const textSpan = document.createElement('span');
+    textSpan.className = 'text';
+    textSpan.textContent = text;
+    btn.append(textSpan);
   }
-
   const wrapper = document.createElement('div');
-  const iconName = icon?.classList?.[1]?.replace('icon-', '') || 'language';
-  wrapper.className = `action-wrapper ${iconName}`;
+  wrapper.className = `action-wrapper ${icon.classList[1].replace('icon-', '')}`;
   wrapper.append(btn);
   link.parentElement.parentElement.replaceChild(wrapper, link.parentElement);
 
@@ -273,9 +143,32 @@ async function decorateAction(header, pattern) {
   if (pattern === '/tools/widgets/toggle') decorateNavToggle(btn);
 }
 
-function decorateMenu() {
-  // TODO: finish single menu support
-  return null;
+function decorateMenu(li) {
+  const submenu = li.querySelector(':scope > ul');
+  if (!submenu) return null;
+
+  li.classList.add('has-dropdown');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'single-menu';
+  const inner = document.createElement('div');
+  inner.className = 'single-menu-inner';
+
+  submenu.classList.add('single-menu-list');
+  inner.append(submenu);
+  wrapper.append(inner);
+
+  [...submenu.children].forEach((item) => {
+    item.classList.add('single-menu-item');
+
+    const link = item.querySelector('a');
+    if (link) {
+      link.classList.add('single-menu-link');
+    }
+  });
+
+  li.append(wrapper);
+  return wrapper;
 }
 
 function decorateMegaMenu(li) {
@@ -290,24 +183,95 @@ function decorateMegaMenu(li) {
 
 function decorateNavItem(li) {
   li.classList.add('main-nav-item');
-  const link = li.querySelector(':scope > p > a');
-  if (link) link.classList.add('main-nav-link');
-  const menu = decorateMegaMenu(li) || decorateMenu(li);
-  if (!(menu || link)) return;
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    toggleMenu(li);
-  });
+
+  const link =
+    li.querySelector(':scope > p > a')
+    || li.querySelector(':scope > a');
+
+  if (!link) {
+    const text = li.textContent.trim();
+    if (text && text.toLowerCase() !== 'search') {
+      const newLink = document.createElement('a');
+      newLink.className = 'main-nav-link';
+      newLink.href = '#';
+      newLink.textContent = text;
+      li.textContent = '';
+      li.append(newLink);
+    }
+  } else {
+    link.classList.add('main-nav-link');
+  }
+
+  const currentLink = li.querySelector('.main-nav-link');
+  const linkText = currentLink ? currentLink.textContent.trim().toLowerCase() : li.textContent.trim().toLowerCase();
+  const isCategories = linkText.includes('categories');
+
+  if (isCategories) {
+    li.classList.add('has-dropdown');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'single-menu';
+    const inner = document.createElement('div');
+    inner.className = 'single-menu-inner';
+
+    const ul = document.createElement('ul');
+    ul.className = 'single-menu-list';
+    
+    inner.append(ul);
+    wrapper.append(inner);
+    li.append(wrapper);
+
+    fetch('/docs/library/metadata/categories.json')
+      .then((response) => {
+        if (!response.ok) throw new Error('Failed to fetch categories spreadsheet');
+        return response.json();
+      })
+      .then((json) => {
+        const categories = json.data || [];
+        categories.forEach((row) => {
+          const item = document.createElement('li');
+          item.className = 'single-menu-item';
+
+          const a = document.createElement('a');
+          a.className = 'single-menu-link';
+          a.href = row.path;      
+          a.textContent = row.label; 
+          
+          item.append(a);
+          ul.append(item);
+        });
+      })
+      .catch((err) => console.error('Error loading dynamic categories:', err));
+  }
+
+  if (isCategories && currentLink) {
+    currentLink.classList.add('dropdown-trigger');
+
+    const arrow = document.createElement('span');
+    arrow.className = 'dropdown-arrow';
+    currentLink.append(arrow);
+
+    currentLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu(li);
+    });
+  }
 }
 
 function decorateBrandSection(section) {
   section.classList.add('brand-section');
   const brandLink = section.querySelector('a');
-  const [, text] = brandLink.childNodes;
-  const span = document.createElement('span');
-  span.className = 'brand-text';
-  span.append(text);
-  brandLink.append(span);
+  if (!brandLink) return;
+
+  const textNode = [...brandLink.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+  if (textNode) {
+    const span = document.createElement('span');
+    span.className = 'brand-text-suffix';
+    span.textContent = textNode.textContent.trim();
+    textNode.remove();
+    brandLink.append(span);
+  }
 }
 
 function decorateNavSection(section) {
@@ -329,16 +293,129 @@ function decorateNavSection(section) {
 
 async function decorateActionSection(section) {
   section.classList.add('actions-section');
+  const items = section.querySelectorAll('li');
+
+  items.forEach((item) => {
+    const text = item.textContent.trim().toLowerCase();
+
+    if (text === 'search') {
+      item.textContent = '';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'search-wrapper';
+
+      const icon = document.createElement('span');
+      icon.className = 'search-icon';
+
+      const input = document.createElement('input');
+      input.type = 'search';
+      input.placeholder = 'Search';
+      input.className = 'search-input';
+
+      wrapper.append(icon, input);
+      item.append(wrapper);
+    }
+  });
 }
 
 async function decorateHeader(fragment) {
   const sections = fragment.querySelectorAll(':scope > .section');
-  if (sections[0]) decorateBrandSection(sections[0]);
-  if (sections[1]) decorateNavSection(sections[1]);
-  if (sections[2]) decorateActionSection(sections[2]);
+  
+  if (sections.length === 3) {
+    // 1. Label the top utility strip wrapper natively
+    sections[0].classList.add('top-utility-section');
+    
+    // 2. Run standard baseline action block layout processing elements
+    await decorateActionSection(sections[2]);
+    
+    // 3. Process corporate branding block and main core navigation
+    decorateBrandSection(sections[1]);
+    decorateNavSection(sections[2]);
+    
+    // 4. Compile actions completely across all sections (including the utility bar)
+    for (const pattern of HEADER_ACTIONS) {
+      await decorateAction(fragment, pattern);
+    }
 
-  for (const pattern of HEADER_ACTIONS) {
-    decorateAction(fragment, pattern);
+    // 5. Create the main horizontal flex row wrapper
+    const mainHeaderRow = document.createElement('div');
+    mainHeaderRow.className = 'main-header-row';
+    
+    // Move logo content inside
+    const brandContent = sections[1].querySelector('.default-content');
+    if (brandContent) {
+      mainHeaderRow.append(brandContent);
+    }
+    
+    // Build navigation container
+    const navElement = document.createElement('nav');
+    const mainNavList = sections[2].querySelector('.main-nav-list');
+    if (mainNavList) {
+      navElement.append(mainNavList);
+    }
+    mainHeaderRow.append(navElement);
+    
+    // Extract and pin the search wrapper block to the right
+    const searchWrapper = sections[2].querySelector('.search-wrapper');
+    if (searchWrapper) {
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'actions-wrapper-right';
+      actionsDiv.append(searchWrapper);
+      mainHeaderRow.append(actionsDiv);
+    }
+
+    // --- NEW DIRECT UTILITY INTERACTION BINDING ---
+    const topUtilityContent = sections[0].querySelector('.default-content');
+    if (topUtilityContent) {
+      // Find the language wrapper directly inside the utility section where it was generated
+      const langWrapper = sections[0].querySelector('.action-wrapper.globe') || sections[0].querySelector('.action-wrapper.language');
+      
+      if (langWrapper) {
+        // Ensure a clean <ul> container exists inside the utility bar
+        let utilityUl = topUtilityContent.querySelector('ul');
+        if (!utilityUl) {
+          utilityUl = document.createElement('ul');
+          topUtilityContent.append(utilityUl);
+        }
+
+        // Safely check for or create the <li> item wrapper
+        let utilityLi = langWrapper.closest('li');
+        if (!utilityLi) {
+          utilityLi = document.createElement('li');
+          utilityLi.append(langWrapper);
+        }
+        
+        utilityLi.className = 'utility-action-item';
+        utilityUl.append(utilityLi); 
+          
+        // Re-bind the language click event controller to the transformed button element
+        const btn = langWrapper.querySelector('button');
+        if (btn) {
+          decorateLanguage(btn);
+        }
+      }
+
+      // Clean out raw authored static text nodes cleanly
+      const textNodes = [...topUtilityContent.childNodes].filter(node => node.nodeType === Node.TEXT_NODE);
+      textNodes.forEach(node => {
+        if (node.textContent.trim().toLowerCase() === 'language') {
+          node.remove();
+        }
+      });
+    }
+
+    // CRITICAL CORRECTION: Append the assembled rows to the DOM and clear old fragments
+    sections[0].after(mainHeaderRow);
+    sections[1].remove();
+    sections[2].remove();
+  } else {
+    if (sections[0]) decorateBrandSection(sections[0]);
+    if (sections[1]) decorateNavSection(sections[1]);
+    if (sections[2]) decorateActionSection(sections[2]);
+    
+    for (const pattern of HEADER_ACTIONS) {
+      await decorateAction(fragment, pattern);
+    }
   }
 }
 
