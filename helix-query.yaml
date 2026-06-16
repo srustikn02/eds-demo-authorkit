@@ -3,11 +3,11 @@ auto-generated: true
 indices:
   blog:
     include:
-      - /docs/content/en/blog/articles/**
+      - /blog/articles/**
     exclude:
-      - /docs/content/en/blog/
-      - /docs/content/en/blog/index
-    target: /docs/content/en/blog/query-index.json
+      - /blog/
+      - /blog/index
+    target: /blog/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]
