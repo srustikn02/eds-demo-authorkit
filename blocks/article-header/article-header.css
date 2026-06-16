@@ -2,37 +2,37 @@
   display: flex;
   flex-direction: column;
   background-color: #f2f3f4;
-  gap: 0;
+  overflow: hidden;
 }
 
 .article-header-content {
-  padding: 48px 40px;
+  padding: 40px 32px;
 }
 
 .article-header-title {
+  margin: 0 0 20px;
   font-size: 42px;
   font-weight: 300;
-  line-height: 1.2;
-  color: #222;
-  margin: 0 0 24px;
+  line-height: 1.15;
   letter-spacing: -0.02em;
+  color: #222;
 }
 
 .article-header-separator {
-  border: none;
-  border-top: 4px solid #00a7b5;
   width: 56px;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
+  border: 0;
+  border-top: 4px solid #00a7b5;
 }
 
 .article-header-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
   color: #666;
-  margin-bottom: 16px;
 }
 
 .article-header-meta a {
@@ -55,54 +55,78 @@
 
 .article-header-image {
   overflow: hidden;
+  background: #fff;
 }
 
 .article-header-image img {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
+  object-position: center center;
 }
 
+/* Desktop */
 @media (width >= 900px) {
   .article-header {
     flex-direction: row;
-    align-items: stretch;
     min-height: 420px;
   }
 
   .article-header-content {
-    flex: 0 0 55%;
-    padding: 56px;
+    flex: 0 0 48%;
+    padding: 48px;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
   .article-header-image {
-    flex: 0 0 45%;
+    flex: 0 0 52%;
+    height: 420px;
   }
 
   .article-header-image img {
+    width: 100%;
     height: 420px;
   }
 }
 
+/* Large desktop */
+@media (width >= 1400px) {
+  .article-header {
+    min-height: 460px;
+  }
+
+  .article-header-image {
+    height: 460px;
+  }
+
+  .article-header-image img {
+    height: 460px;
+  }
+}
+
+/* Mobile */
 @media (width < 900px) {
   .article-header-content {
-    padding: 32px 24px;
+    padding: 24px 20px;
   }
 
   .article-header-title {
     font-size: 32px;
-    line-height: 1.2;
   }
 
   .article-header-meta {
     font-size: 12px;
   }
 
+  .article-header-image {
+    height: 260px;
+  }
+
   .article-header-image img {
-    height: auto;
+    width: 100%;
+    height: 260px;
   }
 }

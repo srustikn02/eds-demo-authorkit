@@ -11,39 +11,49 @@ body.has-template main {
 .blog-article-template main > .section:not(:first-child) {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 32px;
+  padding: 32px 24px;
 }
 
 /* Content width */
 .blog-article-template main .default-content-wrapper {
-  max-width: 1050px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
-/* Typography */
+/* Body Typography */
 .blog-article-template main p {
-  font-size: 18px;
-  line-height: 1.7;
-  color: #444;
-  margin-bottom: 24px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #333;
+  margin: 0 0 24px;
 }
 
 .blog-article-template main h2 {
-  font-size: 38px;
+  font-size: 32px;
   font-weight: 300;
-  line-height: 1.2;
+  line-height: 1.25;
   color: #222;
   margin-top: 56px;
   margin-bottom: 20px;
 }
 
 .blog-article-template main h3 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 400;
   line-height: 1.3;
   color: #222;
   margin-top: 40px;
   margin-bottom: 16px;
+}
+
+.blog-article-template main strong,
+.blog-article-template main b {
+  font-weight: 600;
+}
+
+.blog-article-template main em {
+  font-style: italic;
 }
 
 /* Images */
@@ -62,8 +72,15 @@ body.has-template main {
 /* Lists */
 .blog-article-template main ul,
 .blog-article-template main ol {
-  margin-bottom: 24px;
-  line-height: 1.7;
+  margin: 0 0 24px;
+  padding-left: 24px;
+}
+
+.blog-article-template main li {
+  font-size: 16px;
+  line-height: 1.75;
+  color: #333;
+  margin-bottom: 8px;
 }
 
 /* Blockquotes */
@@ -71,13 +88,14 @@ body.has-template main {
   border-left: 4px solid #00a7b5;
   padding-left: 24px;
   margin: 40px 0;
-  font-style: italic;
   color: #555;
+  font-style: italic;
 }
 
 /* Links */
 .blog-article-template main a {
   color: #00778b;
+  text-decoration: none;
 }
 
 .blog-article-template main a:hover {
@@ -90,17 +108,17 @@ body.has-template main {
     padding: 24px 20px;
   }
 
-  .blog-article-template main p {
+  .blog-article-template main p,
+  .blog-article-template main li {
     font-size: 16px;
-    line-height: 1.7;
   }
 
   .blog-article-template main h2 {
-    font-size: 30px;
+    font-size: 28px;
     margin-top: 40px;
   }
 
   .blog-article-template main h3 {
-    font-size: 24px;
+    font-size: 22px;
   }
 }
