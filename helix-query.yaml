@@ -1,13 +1,15 @@
-version: 1
 auto-generated: true
 indices:
   blog:
     include:
       - /blog/articles/**
     exclude:
-      - /blog/
-      - /blog/index
-    target: /blog/query-index.json
+      - /blog/articles/
+      - /blog/articles/index
+      - /blog/articles/index*
+      - /blog/articles/metadata
+      - /blog/articles/taxonomy
+    target: /blog/articles/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]
