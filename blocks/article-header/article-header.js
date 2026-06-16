@@ -19,11 +19,11 @@ export default async function init(el) {
   const date = getMetadata('publication-date');
   const author = getMetadata('author');
   const image = getMetadata('og:image');
-  const tags = getMetadata('article:tag');
+  const category = getMetadata('category');
   const readTime = estimateReadingTime();
 
   const authorSlug = author ? author.toLowerCase().replace(/\s+/g, '-') : '';
-  const firstTag = tags ? tags.split(',')[0].trim() : '';
+  const firstCategory = category ? category.split(',')[0].trim() : '';
 
   el.innerHTML = `
     <div class="article-header-content">
@@ -32,7 +32,7 @@ export default async function init(el) {
       <div class="article-header-meta">
         ${date ? `<span class="article-header-date">${formatDate(date)}</span>` : ''}
         ${author ? `<span class="article-header-divider">|</span><span class="article-header-author">By <a href="/author/${authorSlug}">${author}</a></span>` : ''}
-        ${firstTag ? `<span class="article-header-divider">|</span><a href="/blog/?category=${encodeURIComponent(firstTag)}" class="article-header-tag">${firstTag}</a>` : ''}
+        ${firstCategory ? `<span class="article-header-divider">|</span><a href="/blog/?category=${encodeURIComponent(firstCategory)}" class="article-header-tag">${firstCategory}</a>` : ''}
       </div>
       ${readTime ? `<div class="article-header-reading-time">Reading Time: ${readTime} minutes</div>` : ''}
     </div>
