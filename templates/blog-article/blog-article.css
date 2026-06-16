@@ -11,22 +11,22 @@ body.has-template main {
 .blog-article-template main > .section:not(:first-child) {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 24px 24px;
 }
 
-/* Content width */
+/* Content width — Waters uses a narrow, readable column */
 .blog-article-template main .default-content-wrapper {
-  max-width: 1040px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
 /* Body Typography */
 .blog-article-template main p {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 1.75;
+  line-height: 1.8;
   color: #333;
-  margin: 0 0 24px;
+  margin: 0 0 28px;
 }
 
 .blog-article-template main h2 {
@@ -34,7 +34,7 @@ body.has-template main {
   font-weight: 300;
   line-height: 1.25;
   color: #222;
-  margin-top: 56px;
+  margin-top: 48px;
   margin-bottom: 20px;
 }
 
@@ -43,7 +43,7 @@ body.has-template main {
   font-weight: 400;
   line-height: 1.3;
   color: #222;
-  margin-top: 40px;
+  margin-top: 36px;
   margin-bottom: 16px;
 }
 
@@ -59,7 +59,7 @@ body.has-template main {
 /* Images */
 .blog-article-template main picture {
   display: block;
-  margin: 32px 0;
+  margin: 36px 0;
   aspect-ratio: 16 / 9;
   overflow: hidden;
 }
@@ -76,15 +76,15 @@ body.has-template main {
 /* Lists */
 .blog-article-template main ul,
 .blog-article-template main ol {
-  margin: 0 0 24px;
+  margin: 0 0 28px;
   padding-left: 24px;
 }
 
 .blog-article-template main li {
-  font-size: 16px;
-  line-height: 1.75;
+  font-size: 18px;
+  line-height: 1.8;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 /* Blockquotes */
@@ -109,17 +109,18 @@ body.has-template main {
 /* Mobile */
 @media (width < 900px) {
   .blog-article-template main > .section:not(:first-child) {
-    padding: 24px 20px;
+    padding: 20px 20px;
   }
 
   .blog-article-template main p,
   .blog-article-template main li {
     font-size: 16px;
+    line-height: 1.75;
   }
 
   .blog-article-template main h2 {
     font-size: 28px;
-    margin-top: 40px;
+    margin-top: 36px;
   }
 
   .blog-article-template main h3 {

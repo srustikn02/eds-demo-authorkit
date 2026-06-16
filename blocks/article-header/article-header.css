@@ -70,11 +70,11 @@
 @media (width >= 900px) {
   .article-header {
     flex-direction: row;
-    min-height: 420px;
+    min-height: 380px;
   }
 
   .article-header-content {
-    flex: 0 0 48%;
+    flex: 0 0 50%;
     padding: 48px;
     display: flex;
     flex-direction: column;
@@ -82,28 +82,28 @@
   }
 
   .article-header-image {
-    flex: 0 0 52%;
-    height: 420px;
+    flex: 0 0 50%;
+    height: 380px;
   }
 
   .article-header-image img {
     width: 100%;
-    height: 420px;
+    height: 380px;
   }
 }
 
 /* Large desktop */
 @media (width >= 1400px) {
   .article-header {
-    min-height: 460px;
+    min-height: 420px;
   }
 
   .article-header-image {
-    height: 460px;
+    height: 420px;
   }
 
   .article-header-image img {
-    height: 460px;
+    height: 420px;
   }
 }
 
@@ -122,11 +122,11 @@
   }
 
   .article-header-image {
-    height: 260px;
+    height: 240px;
   }
 
   .article-header-image img {
     width: 100%;
-    height: 260px;
+    height: 240px;
   }
 }
