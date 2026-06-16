@@ -60,13 +60,17 @@ body.has-template main {
 .blog-article-template main picture {
   display: block;
   margin: 32px 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
 }
 
 .blog-article-template main picture img,
 .blog-article-template main img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
 /* Lists */
@@ -120,5 +124,9 @@ body.has-template main {
 
   .blog-article-template main h3 {
     font-size: 22px;
+  }
+
+  .blog-article-template main picture {
+    aspect-ratio: 16 / 10;
   }
 }
