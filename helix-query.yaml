@@ -9,7 +9,7 @@ indices:
       - /blog/articles/index*
       - /blog/articles/metadata
       - /blog/articles/taxonomy
-    target: /blog/query-index.json
+    target: /blog/articles/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]

@@ -27,7 +27,7 @@ async function fetchMetadata() {
 }
 
 export default async function init(el) {
-  const source = el.querySelector('a')?.href || '/blog/query-index.json';
+  const source = el.querySelector('a')?.href || '/blog/articles/query-index.json';
   el.innerHTML = '';
 
   let post = null;
