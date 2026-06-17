@@ -9,7 +9,7 @@ indices:
       - /blog/articles/index*
       - /blog/articles/metadata
       - /blog/articles/taxonomy
-    target: /blog/articles/query-index.json
+    target: /blog/query-index.json
     properties:
       title:
         select: head > meta[property="og:title"]
@@ -38,13 +38,13 @@ indices:
       image:
         select: head > meta[property="og:image"]
         value: |
-          match(attribute(el, "content"), "https:\/\/[^/]+(/.*)")
+          match(attribute(el, "content"), "(?:https:\/\/[^/]+)?(/.*)")
       content:
         select: main > div
         value: |
           characters(textContent(el), 0, 200)
       category:
-        select: head > meta[name="category"]
+        select: head > meta[property="article:tag"]
         value: |
           attribute(el, "content")
       tags:
